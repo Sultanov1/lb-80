@@ -1,6 +1,6 @@
-import { Router } from "express";
-import fileDb from "../fileDb";
-import { ItemMutation } from '../types';
+import {Router} from 'express';
+import fileDb from '../fileDb';
+import {ItemMutation} from '../types';
 
 const itemsRouter = Router();
 
@@ -10,7 +10,7 @@ itemsRouter.get('/', async (req, res) => {
     res.send(items);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({error: 'Internal Server Error'});
   }
 });
 
@@ -20,18 +20,18 @@ itemsRouter.get('/:id', async (req, res) => {
     const item = items.find(m => m.id === req.params.id);
 
     if (!item) {
-      return res.status(404).json({ error: 'Item not found' });
+      return res.status(404).json({error: 'Item not found'});
     }
 
     res.send(item);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({error: 'Internal Server Error'});
   }
 });
 
-itemsRouter.post('/',  async (req, res) => {
-  const { itemsName, itemsDescription, categoryId, placesId} = req.body;
+itemsRouter.post('/', async (req, res) => {
+  const {itemsName, itemsDescription, categoryId, placesId} = req.body;
   const image = req.file ? req.file.filename : '';
 
   const newItem: ItemMutation = {
@@ -47,13 +47,30 @@ itemsRouter.post('/',  async (req, res) => {
     res.send(savedItem);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({error: 'Internal Server Error'});
   }
 
   if (!itemsName || !itemsDescription || !categoryId || !placesId || !image) {
-    return res.status(400).json({ error: 'All fields are required' });
+    return res.status(400).json({error: 'All fields are required'});
   }
 
 });
+
+itemsRouter.delete('/:id', async (req, res) => {
+  try {
+    const items = await fileDb.getItems();
+    const item = items.find(m => m.id === req.params.id);
+
+    if (!item) {
+      return res.status(404).send({error: 'Item not found'})
+    }
+
+    const deleteItem = await fileDb.deleteItem(req.params.id);
+    res.send(deleteItem)
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+})
 
 export default itemsRouter;

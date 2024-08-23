@@ -37,8 +37,28 @@ placeRouter.post('/', async (req, res) => {
     res.status(404).send({error: 'Not found!'});
   }
 
-  if(!placeName) {
+  if (!placeName) {
     return res.status(404).send({error: 'place cannot be empty!'});
+  }
+})
+
+placeRouter.delete('/:id', async (req, res) => {
+  try {
+    const placeId = req.params.id;
+
+    const placeItems =  await fileDb.getPlace(placeId);
+    const places = await fileDb.getPlaces();
+    const place = places.find(c => c.id === req.params.id);
+
+    if(!place || !placeItems) {
+      return res.status(404).send({error: 'Not found!'});
+    }
+
+    const deletePlace = await fileDb.deletePlace(placeId);
+    res.send(deletePlace);
+  } catch (e) {
+    console.error(e);
+    res.status(404).send({error: 'Not found!'});
   }
 })
 
