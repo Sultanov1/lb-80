@@ -71,6 +71,24 @@ itemsRouter.delete('/:id', async (req, res) => {
     console.error(error);
     res.status(500).json({error: 'Internal Server Error'});
   }
+});
+
+itemsRouter.put('/:id', async (req, res) => {
+  const itemId = req.params.id;
+  const newData = req.body;
+
+  try {
+    const updatedItem = await fileDb.updateItem(itemId, newData);
+
+    if (!updatedItem) {
+      return res.status(404).send({error: 'Item not found'});
+    }
+
+    res.send(updatedItem);
+  } catch (e) {
+    console.error(e);
+    res.status(404).json({error: 'Item not found'});
+  }
 })
 
 export default itemsRouter;

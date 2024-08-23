@@ -54,10 +54,28 @@ categoriesRouter.delete('/:id', async (req, res) => {
 
     const deleteCategory = await fileDb.deleteCategory(categoryId);
     res.send(deleteCategory);
-  }catch (e) {
+  } catch (e) {
     console.error(e);
     res.status(500).send({error: 'Internal Server Error'});
   }
 });
+
+categoriesRouter.put('/:id', async (req, res) => {
+  const categoryId = req.params.id;
+  const newData = req.body;
+
+  try {
+    const updatedCategory = await fileDb.updateCategory(categoryId, newData);
+
+    if (!updatedCategory) {
+      return res.status(404).send({error: 'Category not found'});
+    }
+
+   res.send(updatedCategory);
+  } catch (e) {
+    console.error(e);
+    res.status(404).send({error: 'Category not found'});
+  }
+})
 
 export default categoriesRouter;
