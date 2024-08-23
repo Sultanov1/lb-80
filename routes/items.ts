@@ -1,6 +1,7 @@
 import {Router} from 'express';
 import fileDb from '../fileDb';
 import {ItemMutation} from '../types';
+import {imagesUpload} from '../multer';
 
 const itemsRouter = Router();
 
@@ -30,30 +31,36 @@ itemsRouter.get('/:id', async (req, res) => {
   }
 });
 
-itemsRouter.post('/', async (req, res) => {
+itemsRouter.post('/', imagesUpload.single('image'), async (req, res) => {
   const {itemsName, itemsDescription, categoryId, placesId} = req.body;
   const image = req.file ? req.file.filename : '';
 
-  const newItem: ItemMutation = {
-    itemsName,
-    itemsDescription,
-    categoryId,
-    placesId,
-    image,
-  };
+  if (!itemsName || !categoryId || !placesId) {
+    return res.status(400).json({ error: 'Item cannot be empty' });
+  }
 
   try {
-    const savedItem = await fileDb.addItem(newItem);
-    res.send(savedItem);
+    const category = await fileDb.getCategory(categoryId);
+    const places = await fileDb.getPlace(placesId);
+
+    if (!category || !places) {
+      return res.status(404).json({error: 'Category cannot be empty'});
+    }
+
+    const newItem: ItemMutation = {
+      itemsName: itemsName,
+      itemsDescription: itemsDescription,
+      categoryId: categoryId,
+      placesId: placesId,
+      image: image
+    };
+
+    const saveItem = await fileDb.addItem(newItem);
+    res.send(saveItem);
   } catch (error) {
     console.error(error);
     res.status(500).json({error: 'Internal Server Error'});
   }
-
-  if (!itemsName || !itemsDescription || !categoryId || !placesId || !image) {
-    return res.status(400).json({error: 'All fields are required'});
-  }
-
 });
 
 itemsRouter.delete('/:id', async (req, res) => {
